@@ -1,0 +1,19 @@
+.button {
+    width: 50%;
+    min-width: 48px; // this is the min width and height for a mobile button
+    min-height: 48px;
+    color: $button-textcolor;
+    border: 2px solid $textbox-bordercolor;
+    border-radius: 10px;
+    outline: none; //not good initially, because you need to see that focus is on the button
+}
+
+.button:hover {
+    cursor: pointer;
+}
+
+.button:hover,
+.button:focus {
+    filter: brightness(120%);
+    box-shadow: 4px 2px 5px #000;
+}
