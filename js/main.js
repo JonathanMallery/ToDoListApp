@@ -32,7 +32,6 @@ const initApp = () => {
         }
     });
 
-
     //Load list object
     loadListObject();
 
@@ -61,16 +60,33 @@ const refreshThePage = () => {
     setFocusOnItemEntry();
 };
 
-const clearListDisplay = () => {
-    const parentElement = document.getElementById("listItems");
-    deleteContents(parentElement);
+const processSubmission = () => {
+    const newEntryText = getNewEntry();
+    if (!newEntryText.length) return;
+    const nextItemId = calcNextItemId();
+    const toDoItem = createNewItem(nextItemId, newEntryText);
+    toDoList.addItemToList(toDoItem);
+    // for assessability screen reader sensibility
+    updateScreenReaderConfirmation(newEntryText, "added to the list");
+    //update the persistent data
+    updatePersistentData(toDoList.getList());
+    refreshThePage();
 };
 
-const deleteContents = (parentElement) => {
-    let child = parentElement.lastElementChild;
-    while(child){
-        parentElement.removeChild(child);
-        child = parentElement.lastElementChild;
+const updatePersistentData = (listArray) => {
+    localStorage.setItem("myTodoList", JSON.stringify(listArray));
+};
+
+const clearListDisplay = () => {
+    const listItemsDiv = document.getElementById("listItems");
+    deleteContents(listItemsDiv);
+};
+
+const deleteContents = (listItemsDiv) => {
+    let itemDiv = listItemsDiv.lastElementChild;
+    while(itemDiv){
+        listItemsDiv.removeChild(itemDiv);
+        itemDiv = listItemsDiv.lastElementChild;
     }
 };
 
@@ -89,38 +105,34 @@ const buildListItem = (item) => {
     check.id = item.getId();
     check.tabIndex = 0;
 
-    addClickListenerToCheckbox(check);
-
     const label = document.createElement("label");
     label.htmlFor = item.getId();
     label.textContent = item.getItem();
+
     div.appendChild(check);
     div.appendChild(label);
+
     const container = document.getElementById("listItems");
     container.appendChild(div);
+
+    addClickListenerToCheckbox(check);
 };
 
 const addClickListenerToCheckbox = (checkbox) => {
     checkbox.addEventListener("click", (event) => {
-        toDoList.removeItemFromList(checkbox.id);
-        // grabbing the _item
+        // grabbing the _item to be paramenter for updateScreenReaderConfirmation()
         const removedText = getLabelText(checkbox.id);
+        toDoList.removeItemFromList(checkbox.id);
         // update the persistent data
         updatePersistentData(toDoList.getList());
+        setTimeout(() => { refreshThePage(); }, 2300);
         // for assessability screen reader sensibility
         updateScreenReaderConfirmation(removedText, "removed from list");
-        setTimeout(() => {
-            refreshThePage();
-        }, 2300);
     });
 };
 
 const getLabelText = (checkboxId) => {
-    return document.getElementById(checkboxID).nextElementSibling.textContent;
-};
-
-const updatePersistentData = (listArray) => {
-    localStorage.setItem("myTodoList", JSON.stringify(listArray));
+    return document.getElementById(checkboxId).nextElementSibling.textContent;
 };
 
 const clearItemEntryField = () => {
@@ -131,18 +143,7 @@ const setFocusOnItemEntry = () => {
     document.getElementById("newItem").focus();
 };
 
-const processSubmission = () => {
-    const newEntryText = getNewEntry();
-    if (!newEntryText.length) return;
-    const nextItemId = calcNextItemId();
-    const toDoItem = createNewItem(nextItemId, newEntryText);
-    toDoList.addItemToList(toDoItem);
-    // for assessability screen reader sensibility
-    updateScreenReaderConfirmation(newEntryText, "added to the list");
-    //update the persistent data
-    updatePersistentData(toDoList.getList());
-    refreshThePage();
-};
+
 
 const getNewEntry = () => {
     return document.getElementById("newItem").value.trim();
